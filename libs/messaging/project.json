@@ -1,0 +1,6 @@
+{
+    "name": "@playx/messaging",
+    "sourceRoot": "libs/messaging/src",
+    "projectType": "library",
+    "targets": {}
+}

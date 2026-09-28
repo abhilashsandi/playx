@@ -1,0 +1,21 @@
+{
+    "name": "frontend",
+    "sourceRoot": "apps/frontend/src",
+    "projectType": "application",
+    "targets": {
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx vite --config apps/frontend/vite.config.ts apps/frontend",
+                "cwd": "."
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx vite build --config apps/frontend/vite.config.ts apps/frontend",
+                "cwd": "."
+            }
+        }
+    }
+}

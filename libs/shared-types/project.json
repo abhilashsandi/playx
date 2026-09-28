@@ -1,0 +1,6 @@
+{
+    "name": "@playx/shared-types",
+    "sourceRoot": "libs/shared-types/src",
+    "projectType": "library",
+    "targets": {}
+}

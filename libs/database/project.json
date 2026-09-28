@@ -1,0 +1,6 @@
+{
+    "name": "@playx/database",
+    "sourceRoot": "libs/database/src",
+    "projectType": "library",
+    "targets": {}
+}

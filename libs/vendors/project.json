@@ -1,0 +1,6 @@
+{
+    "name": "@playx/vendors",
+    "sourceRoot": "libs/vendors/src",
+    "projectType": "library",
+    "targets": {}
+}

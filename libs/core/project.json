@@ -1,0 +1,6 @@
+{
+    "name": "@playx/core",
+    "sourceRoot": "libs/core/src",
+    "projectType": "library",
+    "targets": {}
+}

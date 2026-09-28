@@ -1,0 +1,46 @@
+sequenceDiagram
+    participant Backend
+    participant VendorService as Vendor Service
+    participant AutomationJobService
+    participant PostgreSQL
+    participant RabbitMQ
+    participant PlaywrightWorker as Playwright Worker
+    participant VendorPortal as Vendor Portal
+    participant Redis
+    participant DLQ as Dead Letter Queue
+    participant Operations
+
+    Backend->>VendorService: runReports(quote, userRole, reportGroup)
+    VendorService->>AutomationJobService: createAutomationJob(carrierId, operation, payload)
+
+    AutomationJobService->>PostgreSQL: INSERT INTO automation_job
+    PostgreSQL-->>AutomationJobService: {jobId, status: Pending}
+
+    AutomationJobService->>AutomationJobService: encryptMessage(jobRequest)
+    AutomationJobService->>RabbitMQ: publish(encryptedMessage, headers: x-job-id, x-max-retries: 0)
+
+    AutomationJobService-->>VendorService: {success: true, jobId, message: "Job queued"}
+    VendorService-->>Backend: {quoteData, messages: [info]}
+
+    RabbitMQ->>PlaywrightWorker: consume message (x-max-retries: 0)
+
+    PlaywrightWorker->>PostgreSQL: updateAutomationJob(jobId, InProgress)
+    PlaywrightWorker->>Redis: publish(update: status=InProgress, message="Logging in...")
+
+    PlaywrightWorker->>VendorPortal: Launch browser & login
+    PlaywrightWorker->>VendorPortal: Search for quote
+    PlaywrightWorker->>VendorPortal: Fill forms & run reports
+    PlaywrightWorker->>VendorPortal: Scrape results
+
+    PlaywrightWorker->>PostgreSQL: updateQuote(quoteId, reportData)
+    PlaywrightWorker->>PostgreSQL: updateAutomationJob(jobId, Completed)
+    PlaywrightWorker->>Redis: publish(update: status=Completed, data=reportData)
+
+    RabbitMQ-->>PlaywrightWorker: ack message
+
+    alt Automation fails
+        PlaywrightWorker->>PostgreSQL: updateAutomationJob(jobId, Failed)
+        PlaywrightWorker->>Redis: publish(update: status=Failed, errorMessage)
+        RabbitMQ->>DLQ: route message to Dead Letter Queue
+        DLQ->>Operations: Alert (DLQ depth > 5)
+    end

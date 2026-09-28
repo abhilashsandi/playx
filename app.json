@@ -1,0 +1,32 @@
+{
+    "name": "Playx Automation Platform",
+    "description": "Distributed automation platform with Playwright, RabbitMQ, and Redis",
+    "repository": "https://github.com/playx/monorepo",
+    "logo": "https://playwright.dev/img/playwright-logo.svg",
+    "keywords": [
+        "node",
+        "express",
+        "react",
+        "rabbitmq",
+        "redis",
+        "playwright"
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/nodejs"
+        },
+        {
+            "url": "https://github.com/heroku/heroku-buildpack-google-chrome"
+        }
+    ],
+    "env": {
+        "NODE_ENV": "production",
+        "BROWSER_HEADLESS": "true",
+        "PLAYWRIGHT_BROWSERS_PATH": "0"
+    },
+    "addons": [
+        "heroku-postgresql",
+        "heroku-redis",
+        "cloudamqp"
+    ]
+}

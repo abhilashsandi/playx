@@ -1,0 +1,21 @@
+{
+    "name": "worker",
+    "sourceRoot": "apps/worker/src",
+    "projectType": "application",
+    "targets": {
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx ts-node -r tsconfig-paths/register apps/worker/src/main.ts",
+                "cwd": "."
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsc -p apps/worker/tsconfig.json",
+                "cwd": "."
+            }
+        }
+    }
+}

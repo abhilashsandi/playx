@@ -1,0 +1,6 @@
+{
+    "name": "@playx/infrastructure",
+    "sourceRoot": "libs/infrastructure/src",
+    "projectType": "library",
+    "targets": {}
+}

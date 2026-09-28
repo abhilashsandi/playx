@@ -1,0 +1,11 @@
+node_modules/
+dist/
+tmp/
+.env
+*.log
+.nx/
+.agent/
+.agents/
+.cursor/
+*.zip
+ts_errors.txt

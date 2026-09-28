@@ -1,0 +1,21 @@
+{
+    "name": "vendor-site",
+    "sourceRoot": "apps/vendor-site/src",
+    "projectType": "application",
+    "targets": {
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx vite --config apps/vendor-site/vite.config.ts apps/vendor-site",
+                "cwd": "."
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx vite build --config apps/vendor-site/vite.config.ts apps/vendor-site",
+                "cwd": "."
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+// Prisma Schema for Distributed Automation Platform
+// Defines the Job model for tracking automation jobs
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id            String   @id @default(uuid()) @db.Uuid
+  vendor        String   // VendorType enum value (e.g. "VENDOR_A")
+  status        String   @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED | FAILED
+  inputPayload  Json     @map("input_payload") // Original job submission data
+  resultPayload Json?    @map("result_payload") // Scraped result from vendor (nullable)
+  errorMessage  String?  @map("error_message") @db.Text // Error details on failure
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  quotes        Quote[]
+
+  @@map("jobs")
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Quote {
+  id        String   @id @default(uuid()) @db.Uuid
+  jobId     String   @map("job_id") @db.Uuid
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  job Job @relation(fields: [jobId], references: [id])
+
+  @@map("quotes")
+}

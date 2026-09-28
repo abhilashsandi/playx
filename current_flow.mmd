@@ -1,0 +1,69 @@
+
+sequenceDiagram
+    autonumber
+    actor User
+    participant Frontend
+    participant API
+    participant DB as PostgreSQL
+    participant MQ as RabbitMQ
+    participant Worker as Heroku Worker
+    participant Redis
+    participant Browserless as Remote Browser (WS)
+    participant Vendor as Vendor Site
+
+    %% --- Job Submission Flow ---
+    Note over User, API: Job Submission
+    User->>Frontend: Fill Job Form & Submit
+    Frontend->>API: POST /api/jobs (payload + vendor)
+    API->>DB: CREATE Job (Status: PENDING)
+    API->>MQ: PUBLISH Job (Encrypted, x-max-retries)
+    API-->>Frontend: Return jobId
+    Frontend->>API: GET /api/jobs/:id/stream (SSE)
+    API->>Redis: SUBSCRIBE job.status.{jobId}
+
+    %% --- Worker Processing Flow ---
+    Note over Worker, Vendor: Async Processing
+    Worker->>MQ: CONSUME Message
+    
+    rect rgb(255, 240, 240)
+        Note right of Worker: Failure Simulation
+        Worker->>Worker: Check Random Failure Rate
+        alt Simulation Triggered
+            Worker--xWorker: Throw Error
+            Worker->>MQ: NACK (Requeue or DLQ)
+        end
+    end
+
+    Worker->>DB: UPDATE Job (Status: IN_PROGRESS)
+    Worker->>Redis: PUBLISH Status (IN_PROGRESS)
+    Redis-->>API: Message Received
+    API-->>Frontend: SSE Event (IN_PROGRESS)
+
+    %% --- Remote Browser Execution ---
+    Note right of Worker: Offloaded to Browserless
+    Worker->>Browserless: Connect via WebSocket (CDP)
+    Browserless->>Browserless: Create Browser Context (Incognito)
+    Browserless->>Vendor: Navigate & Fill Form
+    Vendor-->>Browserless: Scrape Results
+    Browserless-->>Worker: Return Scraped Data
+    Worker->>Browserless: Close Context
+
+    %% --- Completion & Quote Creation ---
+    Note over Worker, DB: Completion
+    Worker->>DB: INSERT Quote (Job Result Data)
+    Worker->>DB: UPDATE Job (Status: COMPLETED)
+    Worker->>Redis: PUBLISH Status (COMPLETED)
+    Redis-->>API: Message Received
+    API-->>Frontend: SSE Event (COMPLETED)
+    Frontend-->>User: Show Success & Data
+
+    %% --- DLQ Monitoring Flow ---
+    Note over User, MQ: Dashboard Monitoring
+    User->>Frontend: View Dashboard
+    loop Every 5 Seconds
+        Frontend->>API: GET /admin/stats
+        API->>MQ: Check DLQ Depth
+        MQ-->>API: Return Count
+        API-->>Frontend: Return { dlqDepth }
+        Frontend-->>User: Update Alert Status
+    end

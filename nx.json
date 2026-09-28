@@ -1,0 +1,24 @@
+{
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "targetDefaults": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "cache": true
+        },
+        "serve": {
+            "cache": false
+        }
+    },
+    "namedInputs": {
+        "default": [
+            "{projectRoot}/**/*",
+            "sharedGlobals"
+        ],
+        "sharedGlobals": [
+            "{workspaceRoot}/tsconfig.base.json"
+        ]
+    },
+    "defaultProject": "frontend"
+}
